@@ -2,7 +2,6 @@ package com.unh.fitnesstracker
 
 import android.app.Application
 import android.util.Log
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.unh.fitnesstracker.data.repository.AuthRepository
@@ -18,15 +17,12 @@ class FitnessApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this)
+        container = AppContainer()
     }
 }
 
 /** Creates each repository once and shares it with every screen. */
-class AppContainer(app: Application) {
-
-    /** False when app/google-services.json is missing, so Firebase never initialized. */
-    val isFirebaseConfigured: Boolean = FirebaseApp.getApps(app).isNotEmpty()
+class AppContainer {
 
     /** Lives as long as the app, for writes that must finish even if the screen closes. */
     val appScope = CoroutineScope(SupervisorJob())

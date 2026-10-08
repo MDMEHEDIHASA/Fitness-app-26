@@ -137,13 +137,7 @@ Declares three plugins without applying them (`apply false`): the Android applic
 - `namespace` and `applicationId` = `com.unh.fitnesstracker`. Firebase uses this package name to recognize the app.
 - `buildFeatures { compose = true }` turns on Jetpack Compose.
 - The Firebase BOM (`platform(libs.firebase.bom)`) picks matching versions of `firebase-auth`, `firebase-firestore`, and `firebase-analytics`, so we don't list a version for each one.
-- **The Google Services plugin is applied only if `google-services.json` exists:**
-  ```kotlin
-  if (file("google-services.json").exists()) {
-      apply(plugin = libs.plugins.google.services.get().pluginId)
-  }
-  ```
-  Without this, the build fails until the Firebase file is added. With it, the project builds right away and the app shows a "Firebase is not set up" message until the file is there.
+- **The Google Services plugin** (`alias(libs.plugins.google.services)`) reads `app/google-services.json` and generates the Firebase settings the app starts with. If the file is missing **or misnamed** (for example `google-services .json` or `google-services (1).json`), the build stops with a "File google-services.json is missing" error. The file name must be exactly `google-services.json`.
 
 ### Step 2: Manifest and resources
 
@@ -243,7 +237,6 @@ The check for the weak-password error comes **before** the invalid-credentials c
 
 `FitnessApp` runs once when the app starts and creates an **`AppContainer`**:
 
-- `isFirebaseConfigured`: `true` only if Firebase started, which means `google-services.json` was present at build time.
 - `authRepository`, `userRepository`: created once with `by lazy` and shared by every screen.
 - `appScope`: a coroutine scope that lives as long as the app. `markOnboardingComplete()` uses it so the Firestore write finishes even after the S4 screen has closed.
 
@@ -256,8 +249,7 @@ The app has **one Activity**, and every screen is a Composable inside it.
 ```kotlin
 setContent {
     FitnessTrackerTheme {
-        if (container.isFirebaseConfigured) AppNavHost(container)
-        else FirebaseMissingScreen()
+        AppNavHost(container)
     }
 }
 ```
@@ -383,11 +375,6 @@ This follows our answer to wireframe feedback question 4: permissions are offere
 ### Step 13: Temporary Home (`ui/home/HomeScreen.kt`)
 
 A placeholder that shows "Hi, {first name}" and a **Log out** button, so this sprint's full log-in/log-out cycle can be tested. **Sprint 2 replaces it** with the real S5 dashboard, drawer, and bottom tabs.
-
-### Step 14: Firebase-not-configured screen
-
-If `google-services.json` is missing, the app shows "Firebase is not set up" with instructions instead of crashing when it first tries to use Firebase.
-
 ---
 
 ## 6. Jetpack Compose concepts used
@@ -434,7 +421,7 @@ service cloud.firestore {
 
 1. Open the [Firebase console](https://console.firebase.google.com). Use the existing project or create a new one.
 2. **Add app → Android**. Package name: **`com.unh.fitnesstracker`**.
-3. Download **`google-services.json`** and put it in `FitnessTracker/app/`.
+3. Download **`google-services.json`** and put it in `FitnessTracker/app/`. Check the name is exactly `google-services.json`; browsers sometimes save it as `google-services (1).json` or add a space.
 4. **Authentication → Sign-in method**: turn on **Email/Password**. Turn on **Google** if you want Google sign-in.
 5. **Firestore Database → Create database**. Test mode works while developing; switch to the rules in section 7 before submitting.
 6. For Google sign-in only:
@@ -455,7 +442,7 @@ service cloud.firestore {
 
 | # | Test | Expected result |
 |---|---|---|
-| 1 | Launch the app without `google-services.json` | "Firebase is not set up" screen |
+| 1 | Build without `app/google-services.json` (or with a misnamed file) | Build fails: "File google-services.json is missing" |
 | 2 | Launch with Firebase configured | S1 Log In |
 | 3 | Tap Log In with empty fields | Banner "Please fix the highlighted fields"; red outlines; "Email is required" and "Password must be at least 8 characters" |
 | 4 | Type in a field after an error | That field's error and the banner disappear |

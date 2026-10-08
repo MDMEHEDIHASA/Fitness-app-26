@@ -1,12 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-}
-
-// The Google Services plugin needs app/google-services.json (downloaded from the Firebase console).
-// Applying it only when the file exists lets the project still compile before Firebase is set up.
-if (file("google-services.json").exists()) {
-    apply(plugin = libs.plugins.google.services.get().pluginId)
+    alias(libs.plugins.google.services)
 }
 
 android {

@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.unh.fitnesstracker.ui.navigation.AppNavHost
-import com.unh.fitnesstracker.ui.navigation.FirebaseMissingScreen
 import com.unh.fitnesstracker.ui.theme.FitnessTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -15,11 +14,7 @@ class MainActivity : ComponentActivity() {
         val container = (application as FitnessApp).container
         setContent {
             FitnessTrackerTheme {
-                if (container.isFirebaseConfigured) {
-                    AppNavHost(container)
-                } else {
-                    FirebaseMissingScreen()
-                }
+                AppNavHost(container)
             }
         }
     }

@@ -1,16 +1,6 @@
 package com.unh.fitnesstracker.ui.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -85,24 +75,5 @@ private fun NavHostController.navigateClearingBackStack(route: String) {
     navigate(route) {
         popUpTo(graph.id) { inclusive = true }
         launchSingleTop = true
-    }
-}
-
-@Composable
-fun FirebaseMissingScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Firebase is not set up", style = MaterialTheme.typography.titleLarge)
-        Text(
-            text = "Add app/google-services.json from the Firebase console, then sync Gradle and run again.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 12.dp),
-        )
     }
 }

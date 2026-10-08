@@ -91,3 +91,8 @@ lint/tmp/
 # lint/reports/
 # Firebase config (contains project keys; each developer downloads their own)
 app/google-services.json
+
+# macOS / per-machine IDE state
+.DS_Store
+.idea/deploymentTargetSelector.xml
+.idea/material_theme_project_new.xml

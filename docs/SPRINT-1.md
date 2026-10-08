@@ -331,7 +331,7 @@ While a request is running, the Log In button shows a spinner and is disabled, s
 4. `LoginViewModel.signInWithGoogle(token)` signs in to Firebase. If the user has no Firestore profile yet, one is created from their Google name and email.
 5. Users who haven't finished onboarding go to **S4**, matching the wireframe ("First-time users go to S4"). Everyone else goes to Home.
 
-The web client ID (`default_web_client_id`) is a string the Google Services plugin generates from `google-services.json`. The helper looks it up by name at runtime instead of using `R.string.default_web_client_id`, which wouldn't compile before Firebase is set up. If the ID is missing, the user sees a clear message instead of a crash.
+The web client ID is stored in `res/values/strings.xml` as `google_web_client_id` and read with `R.string.google_web_client_id`. It must be the OAuth **Web client** ID (type 3), not the Android client ID. Google sign-in also needs the app's SHA-1 fingerprint registered in Firebase (see section 8); without it, the account picker fails with "Developer console is not set up correctly".
 
 Cancelling the account picker does nothing, which is the expected behavior. "No Google account on device" and other errors appear in the banner.
 
@@ -438,9 +438,13 @@ service cloud.firestore {
 4. **Authentication → Sign-in method**: turn on **Email/Password**. Turn on **Google** if you want Google sign-in.
 5. **Firestore Database → Create database**. Test mode works while developing; switch to the rules in section 7 before submitting.
 6. For Google sign-in only:
-   - In Android Studio: **Gradle panel → app → Tasks → android → signingReport** and copy the **SHA-1** value.
+   - **Authentication → Sign-in method → Google → Enable**, choose a support email, and **Save**. The **Web client ID** shown there goes in `strings.xml` (`google_web_client_id`).
+   - Get the debug **SHA-1**: Android Studio **Gradle panel → app → Tasks → android → signingReport**, or in Terminal:
+     `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`
+     (This Mac's debug SHA-1 is `FB:3E:3E:AF:F0:A4:3D:D7:9A:3F:6D:89:83:DA:1A:49:F3:05:9F:4C`.)
    - Firebase → **Project settings → your Android app → Add fingerprint** and paste it.
-   - Download `google-services.json` **again** (it now includes the web client ID) and replace the old file.
+   - Download `google-services.json` **again** and replace the old file. Its `oauth_client` list should no longer be empty.
+   - The emulator must be a **"Google Play"** system image, signed in to a Google account.
 7. In Android Studio: **File → Sync Project with Gradle Files**, then **Run**.
 
 `app/google-services.json` is listed in `.gitignore`, so the Firebase keys don't get committed to git.

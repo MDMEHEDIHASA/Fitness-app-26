@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Fitness Tracker</string>
+
+    <!-- OAuth "Web client" ID from Firebase Authentication > Google (Google Cloud Console > Credentials).
+         It must be the Web client, not the Android client. -->
+    <string name="google_web_client_id" translatable="false">613211394081-c0q84i111p6rd48jir81eljb418rgemv.apps.googleusercontent.com</string>
 </resources>

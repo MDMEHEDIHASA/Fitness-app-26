@@ -2,6 +2,7 @@ package com.unh.fitnesstracker.data.repository
 
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -55,5 +56,7 @@ fun Throwable.toAuthMessage(): String = when (this) {
     is FirebaseAuthUserCollisionException -> "An account with this email already exists."
     is FirebaseAuthInvalidUserException,
     is FirebaseAuthInvalidCredentialsException -> "Incorrect email or password"
+    is FirebaseAuthException if errorCode == "ERROR_OPERATION_NOT_ALLOWED" ->
+        "This sign-in method is turned off. Enable it in Firebase Authentication > Sign-in method."
     else -> localizedMessage ?: "Something went wrong. Try again."
 }

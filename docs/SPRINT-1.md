@@ -222,6 +222,7 @@ Each function is `suspend` and uses `.await()`, so the caller waits for Firebase
 | `FirebaseAuthWeakPasswordException` | "Password is too weak. Use at least 8 characters." |
 | `FirebaseAuthUserCollisionException` | "An account with this email already exists." |
 | `FirebaseAuthInvalidUserException` / `InvalidCredentialsException` | "Incorrect email or password" |
+| `FirebaseAuthException` with code `ERROR_OPERATION_NOT_ALLOWED` | "This sign-in method is turned off. Enable it in Firebase Authentication > Sign-in method." |
 
 The check for the weak-password error comes **before** the invalid-credentials check, because `WeakPassword` is a subclass of `InvalidCredentials` and would otherwise be caught by the wrong branch.
 

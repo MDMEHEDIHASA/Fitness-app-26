@@ -34,7 +34,7 @@ The app is built in sprints. Each sprint has a card on the [sprint board](https:
 | Sprint | Feature | Wireframe screens | Status |
 |---|---|---|---|
 | 1 | [Setup & authentication](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/1) | S1–S4 | ✅ Done · [docs](docs/SPRINT-1.md) |
-| 2 | [App shell: Home, navigation, profile](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/2) | S5–S7, S28, S29 | 🚧 In progress |
+| 2 | [App shell: Home, navigation, profile](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/2) | S5–S7, S28, S29 | 🔍 In review · [docs](docs/SPRINT-2.md) |
 | 3 | [Strength workout logging](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/3) | S9–S12, S16 | Backlog |
 | 4 | [Workout history & detail](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/4) | S17, S18, S30, S31 | Backlog |
 | 5 | [Progress charts & personal records](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/5) | S19, S20 | Backlog |
@@ -132,7 +132,10 @@ app/src/main/java/com/unh/fitnesstracker/
     ├── components/            Shared Compose widgets
     ├── auth/                  S1–S3 Log In / Sign Up (+ ViewModels)
     ├── onboarding/            S4 Health & Permissions
-    └── home/                  S5 Home
+    ├── main/                  App shell: drawer (S6), bottom tabs, MainScreen
+    ├── home/                  S5 Home dashboard
+    ├── workout/               S7 Start Workout sheet, Workouts tab
+    └── profile/               S28 Profile & Settings
 docs/
 ├── SPRINT-PLAN.md             Full roadmap and Firestore data model
 └── SPRINT-N.md                Write-up for each completed sprint

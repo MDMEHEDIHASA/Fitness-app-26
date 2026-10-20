@@ -42,6 +42,11 @@ class AuthRepository(private val auth: FirebaseAuth) {
         )
     }
 
+    suspend fun updateDisplayName(name: String) {
+        val request = UserProfileChangeRequest.Builder().setDisplayName(name).build()
+        auth.currentUser?.updateProfile(request)?.await()
+    }
+
     suspend fun sendPasswordReset(email: String) {
         auth.sendPasswordResetEmail(email.trim()).await()
     }

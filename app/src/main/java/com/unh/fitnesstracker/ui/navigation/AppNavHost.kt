@@ -11,16 +11,17 @@ import com.unh.fitnesstracker.ui.auth.LoginScreen
 import com.unh.fitnesstracker.ui.auth.LoginViewModel
 import com.unh.fitnesstracker.ui.auth.SignUpScreen
 import com.unh.fitnesstracker.ui.auth.SignUpViewModel
-import com.unh.fitnesstracker.ui.home.HomeScreen
+import com.unh.fitnesstracker.ui.main.MainScreen
 import com.unh.fitnesstracker.ui.onboarding.PermissionsScreen
 
+/** Top-level navigation: the log-in screens, then [MainScreen] for everything behind log-in. */
 @Composable
 fun AppNavHost(
     container: AppContainer,
     navController: NavHostController = rememberNavController(),
 ) {
     val startDestination =
-        if (container.authRepository.currentUser == null) Routes.LOGIN else Routes.HOME
+        if (container.authRepository.currentUser == null) Routes.LOGIN else Routes.MAIN
 
     NavHost(navController = navController, startDestination = startDestination) {
 
@@ -30,7 +31,7 @@ fun AppNavHost(
             }
             LoginScreen(
                 viewModel = vm,
-                onLoggedIn = { navController.navigateClearingBackStack(Routes.HOME) },
+                onLoggedIn = { navController.navigateClearingBackStack(Routes.MAIN) },
                 onNewGoogleUser = { navController.navigateClearingBackStack(Routes.PERMISSIONS) },
                 onSignUpClick = { navController.navigate(Routes.SIGN_UP) },
             )
@@ -53,18 +54,15 @@ fun AppNavHost(
                     container.authRepository.currentUser?.uid?.let { uid ->
                         container.markOnboardingComplete(uid)
                     }
-                    navController.navigateClearingBackStack(Routes.HOME)
+                    navController.navigateClearingBackStack(Routes.MAIN)
                 },
             )
         }
 
-        composable(Routes.HOME) {
-            HomeScreen(
-                displayName = container.authRepository.currentUser?.displayName,
-                onLogOut = {
-                    container.authRepository.signOut()
-                    navController.navigateClearingBackStack(Routes.LOGIN)
-                },
+        composable(Routes.MAIN) {
+            MainScreen(
+                container = container,
+                onLoggedOut = { navController.navigateClearingBackStack(Routes.LOGIN) },
             )
         }
     }

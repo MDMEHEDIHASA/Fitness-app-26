@@ -2,6 +2,7 @@ package com.unh.fitnesstracker.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.unh.fitnesstracker.data.model.BodyStatsValidator
 import com.unh.fitnesstracker.data.model.UserProfile
 import com.unh.fitnesstracker.data.repository.AuthRepository
 import com.unh.fitnesstracker.data.repository.UserRepository
@@ -92,13 +93,9 @@ class SignUpViewModel(
         validateEmail(s.email)?.let { put(SignUpField.EMAIL, it) }
         validatePassword(s.password)?.let { put(SignUpField.PASSWORD, it) }
         if (s.confirmPassword != s.password) put(SignUpField.CONFIRM, "Passwords don't match")
-        if (s.age.isNotEmpty() && s.age.toInt() !in 10..120) put(SignUpField.AGE, "10–120")
-        if (s.height.isNotEmpty() && s.height.toDoubleOrNull()?.let { it in 50.0..250.0 } != true) {
-            put(SignUpField.HEIGHT, "50–250 cm")
-        }
-        if (s.weight.isNotEmpty() && s.weight.toDoubleOrNull()?.let { it in 20.0..400.0 } != true) {
-            put(SignUpField.WEIGHT, "20–400 kg")
-        }
+        BodyStatsValidator.ageError(s.age)?.let { put(SignUpField.AGE, it) }
+        BodyStatsValidator.heightError(s.height.toDoubleOrNull(), s.height)?.let { put(SignUpField.HEIGHT, it) }
+        BodyStatsValidator.weightError(s.weight.toDoubleOrNull(), s.weight)?.let { put(SignUpField.WEIGHT, it) }
         if (!s.agreedToTerms) put(SignUpField.TERMS, "You must agree to continue")
     }
 }

@@ -19,7 +19,9 @@ object Routes {
     const val SMARTWATCH = "smartwatch"   // S25, S27
     const val HELP = "help"
 
-    const val STRENGTH_WORKOUT = "workout/strength"             // S9
+    const val STRENGTH_WORKOUT = "workout/strength"             // S9, S11, S12
+    const val ADD_EXERCISE = "workout/strength/add"             // S10
+    const val WORKOUT_SUMMARY = "workout/summary"               // S16
     const val OUTDOOR_WORKOUT = "workout/outdoor/{type}"        // S13
     const val OUTDOOR_TYPE_ARG = "type"
 

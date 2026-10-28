@@ -3,11 +3,14 @@ package com.unh.fitnesstracker.ui.workout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
@@ -29,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.unh.fitnesstracker.data.model.WorkoutTemplate
 import com.unh.fitnesstracker.ui.navigation.OutdoorType
 
 /** S7 Start Workout bottom sheet, opened by the + button on Home or Workouts. Swipe down to close. */
@@ -36,8 +40,11 @@ import com.unh.fitnesstracker.ui.navigation.OutdoorType
 @Composable
 fun StartWorkoutSheet(
     watchConnected: Boolean,
+    templates: List<WorkoutTemplate>,
+    workoutInProgress: Boolean,
     onDismiss: () -> Unit,
     onStrengthClick: () -> Unit,
+    onTemplateClick: (WorkoutTemplate) -> Unit,
     onOutdoorClick: (OutdoorType) -> Unit,
 ) {
     ModalBottomSheet(
@@ -52,7 +59,12 @@ fun StartWorkoutSheet(
             )
 
             // ① Strength
-            WorkoutTypeRow(Icons.Filled.FitnessCenter, "Strength training", "Log sets, reps & weight", onStrengthClick)
+            WorkoutTypeRow(
+                Icons.Filled.FitnessCenter,
+                "Strength training",
+                if (workoutInProgress) "In progress · tap to resume" else "Log sets, reps & weight",
+                onStrengthClick,
+            )
             // ② Outdoor
             WorkoutTypeRow(Icons.AutoMirrored.Filled.DirectionsRun, OutdoorType.RUN.label, "GPS route, pace, heart rate") {
                 onOutdoorClick(OutdoorType.RUN)
@@ -64,28 +76,40 @@ fun StartWorkoutSheet(
                 onOutdoorClick(OutdoorType.CYCLE)
             }
 
-            // ③ Templates (saved templates arrive with Sprint 3)
+            // ③ Templates, saved from the S9 ⋮ menu
             Text(
                 "From a template",
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 4.dp),
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 24.dp),
-            ) {
-                Text(
-                    "No templates yet",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                )
-                AssistChip(
-                    onClick = onStrengthClick,
-                    label = { Text("New") },
-                    leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                )
+            if (templates.isEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                ) {
+                    Text(
+                        "No templates yet · save one from a workout's ⋮ menu",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    NewChip(onStrengthClick)
+                }
+            } else {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(templates, key = { it.id }) { template ->
+                        AssistChip(
+                            onClick = { onTemplateClick(template) },
+                            label = { Text(template.name) },
+                            enabled = !workoutInProgress,
+                        )
+                    }
+                    item { NewChip(onStrengthClick) }
+                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -100,6 +124,15 @@ fun StartWorkoutSheet(
             )
         }
     }
+}
+
+@Composable
+private fun NewChip(onClick: () -> Unit) {
+    AssistChip(
+        onClick = onClick,
+        label = { Text("New") },
+        leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) },
+    )
 }
 
 @Composable

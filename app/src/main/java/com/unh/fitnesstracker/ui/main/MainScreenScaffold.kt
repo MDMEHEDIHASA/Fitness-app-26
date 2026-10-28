@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,6 +25,9 @@ sealed interface TopBarNav {
 
     /** ← on screens opened from the drawer or a button. */
     data class Back(val onClick: () -> Unit) : TopBarNav
+
+    /** ✕ on full-screen tasks such as an active workout (S9) or its summary (S16). */
+    data class Close(val onClick: () -> Unit, val description: String = "Close") : TopBarNav
 }
 
 /**
@@ -51,6 +55,9 @@ fun MainScreenScaffold(
                         }
                         is TopBarNav.Back -> IconButton(onClick = nav.onClick) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                        is TopBarNav.Close -> IconButton(onClick = nav.onClick) {
+                            Icon(Icons.Filled.Close, contentDescription = nav.description)
                         }
                     }
                 },

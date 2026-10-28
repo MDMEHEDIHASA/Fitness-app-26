@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.ShowChart
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Watch
@@ -34,6 +33,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.unh.fitnesstracker.AppContainer
+import com.unh.fitnesstracker.data.model.UnitSystem
 import com.unh.fitnesstracker.ui.components.LogOutDialog
 import com.unh.fitnesstracker.ui.home.HomeScreen
 import com.unh.fitnesstracker.ui.home.HomeViewModel
@@ -41,7 +41,13 @@ import com.unh.fitnesstracker.ui.navigation.OutdoorType
 import com.unh.fitnesstracker.ui.navigation.Routes
 import com.unh.fitnesstracker.ui.profile.ProfileScreen
 import com.unh.fitnesstracker.ui.profile.ProfileViewModel
+import com.unh.fitnesstracker.ui.workout.ActiveWorkoutScreen
+import com.unh.fitnesstracker.ui.workout.ActiveWorkoutViewModel
+import com.unh.fitnesstracker.ui.workout.AddExerciseScreen
+import com.unh.fitnesstracker.ui.workout.AddExerciseViewModel
 import com.unh.fitnesstracker.ui.workout.StartWorkoutSheet
+import com.unh.fitnesstracker.ui.workout.StartWorkoutViewModel
+import com.unh.fitnesstracker.ui.workout.WorkoutSummaryScreen
 import com.unh.fitnesstracker.ui.workout.WorkoutsScreen
 import kotlinx.coroutines.launch
 
@@ -61,6 +67,12 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
         ProfileViewModel(uid, container.userRepository, container.authRepository)
     }
     val profile by profileViewModel.profile.collectAsStateWithLifecycle()
+    val startWorkoutViewModel: StartWorkoutViewModel = viewModel {
+        StartWorkoutViewModel(uid, container.templateRepository, container.workoutSession)
+    }
+    val templates by startWorkoutViewModel.templates.collectAsStateWithLifecycle()
+    val activeWorkout by startWorkoutViewModel.activeWorkout.collectAsStateWithLifecycle()
+    val units = profile?.unitSystem ?: UnitSystem.METRIC
 
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -78,6 +90,7 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
     val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
     val goBack: () -> Unit = { navController.popBackStack() }
     val openStartSheet: () -> Unit = { showStartSheet = true }
+    val openStrengthWorkout: () -> Unit = { navController.navigate(Routes.STRENGTH_WORKOUT) { launchSingleTop = true } }
 
     BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
 
@@ -115,7 +128,9 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     .then(if (onTab) Modifier else Modifier.navigationBarsPadding()),
             ) {
                 composable(Routes.HOME) {
-                    val vm: HomeViewModel = viewModel { HomeViewModel(uid, container.userRepository) }
+                    val vm: HomeViewModel = viewModel {
+                        HomeViewModel(uid, container.userRepository, container.workoutRepository, container.workoutSession)
+                    }
                     HomeScreen(
                         viewModel = vm,
                         onMenuClick = openDrawer,
@@ -125,6 +140,7 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                         onGoalsClick = { navController.navigate(Routes.GOALS) },
                         onRemindersClick = { navController.navigate(Routes.REMINDERS) },
                         onStartWorkout = openStartSheet,
+                        onResumeWorkout = openStrengthWorkout,
                     )
                 }
                 composable(Routes.WORKOUTS) {
@@ -172,10 +188,33 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     HelpScreen(onBack = goBack)
                 }
                 composable(Routes.STRENGTH_WORKOUT) {
-                    ComingSoonScreen(
-                        title = "Strength training", icon = Icons.Filled.FitnessCenter, sprint = 3,
-                        description = "Log sets, reps and weight with a rest timer between sets.",
-                        nav = TopBarNav.Back(goBack),
+                    val vm: ActiveWorkoutViewModel = viewModel {
+                        ActiveWorkoutViewModel(uid, container.workoutSession, container.workoutRepository, container.templateRepository)
+                    }
+                    ActiveWorkoutScreen(
+                        viewModel = vm,
+                        onAddExercise = { navController.navigate(Routes.ADD_EXERCISE) { launchSingleTop = true } },
+                        onFinished = {
+                            navController.navigate(Routes.WORKOUT_SUMMARY) {
+                                popUpTo(Routes.STRENGTH_WORKOUT) { inclusive = true }
+                            }
+                        },
+                        onClose = goBack,
+                    )
+                }
+                composable(Routes.ADD_EXERCISE) {
+                    val vm: AddExerciseViewModel = viewModel {
+                        AddExerciseViewModel(uid, container.exerciseRepository, container.workoutSession)
+                    }
+                    AddExerciseScreen(viewModel = vm, onBack = goBack)
+                }
+                composable(Routes.WORKOUT_SUMMARY) {
+                    WorkoutSummaryScreen(
+                        uid = uid,
+                        session = container.workoutSession,
+                        workoutRepository = container.workoutRepository,
+                        units = units,
+                        onDone = goBack,
                     )
                 }
                 composable(
@@ -196,10 +235,18 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
     if (showStartSheet) {
         StartWorkoutSheet(
             watchConnected = watchConnected,
+            templates = templates,
+            workoutInProgress = activeWorkout != null,
             onDismiss = { showStartSheet = false },
             onStrengthClick = {
                 showStartSheet = false
-                navController.navigate(Routes.STRENGTH_WORKOUT)
+                startWorkoutViewModel.startStrength(profile)
+                openStrengthWorkout()
+            },
+            onTemplateClick = { template ->
+                showStartSheet = false
+                startWorkoutViewModel.startStrength(profile, template)
+                openStrengthWorkout()
             },
             onOutdoorClick = { type ->
                 showStartSheet = false
@@ -212,6 +259,8 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
         LogOutDialog(
             onConfirm = {
                 showLogOutDialog = false
+                container.workoutSession.discard()
+                container.workoutSession.clearLastSaved()
                 container.authRepository.signOut()
                 onLoggedOut()
             },

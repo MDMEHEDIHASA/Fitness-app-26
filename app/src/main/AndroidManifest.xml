@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Rest timer buzz (S11). Normal permission: granted at install, no prompt. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".FitnessApp"

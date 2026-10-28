@@ -23,6 +23,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unh.fitnesstracker.ui.components.InitialsAvatar
 import com.unh.fitnesstracker.ui.main.MainScreenScaffold
 import com.unh.fitnesstracker.ui.main.TopBarNav
+import com.unh.fitnesstracker.ui.workout.WorkoutFormat
 import java.text.NumberFormat
 
 /** S5 Home dashboard. */
@@ -55,6 +57,7 @@ fun HomeScreen(
     onGoalsClick: () -> Unit,
     onRemindersClick: () -> Unit,
     onStartWorkout: () -> Unit,
+    onResumeWorkout: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val numbers = NumberFormat.getIntegerInstance()
@@ -86,6 +89,25 @@ fun HomeScreen(
                 style = MaterialTheme.typography.headlineMedium,
             )
             Text(state.dateText, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            state.workoutInProgress?.let { active ->
+                Card(
+                    onClick = onResumeWorkout,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Workout in progress", style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                "${active.name} · ${WorkoutFormat.clock(active.elapsedSec)}",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
+                        Button(onClick = onResumeWorkout) { Text("Resume") }
+                    }
+                }
+            }
 
             // ② Watch status chip
             AssistChip(
@@ -168,7 +190,7 @@ fun HomeScreen(
                     val goal = state.weeklyWorkoutGoal
                     Text(
                         if (goal != null) "Weekly goal · ${state.workoutsThisWeek} of $goal workouts"
-                        else "Weekly goal · not set",
+                        else "This week · ${state.workoutsThisWeek} ${if (state.workoutsThisWeek == 1) "workout" else "workouts"}",
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(Modifier.height(8.dp))
@@ -179,7 +201,7 @@ fun HomeScreen(
                     if (goal == null) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Tap to set a goal",
+                            "No weekly goal yet · tap to set one",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

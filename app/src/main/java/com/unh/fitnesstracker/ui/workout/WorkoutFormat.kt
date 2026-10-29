@@ -6,6 +6,7 @@ import com.unh.fitnesstracker.data.model.TrackedBy
 import com.unh.fitnesstracker.data.model.UnitSystem
 import com.unh.fitnesstracker.data.model.Units
 import com.unh.fitnesstracker.data.model.Workout
+import com.unh.fitnesstracker.data.model.WorkoutType
 import com.unh.fitnesstracker.data.session.ActiveWorkoutSession
 import java.text.NumberFormat
 import java.time.Instant
@@ -17,6 +18,8 @@ object WorkoutFormat {
 
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEE, MMM d · h:mm a")
     private val dateFormatter = DateTimeFormatter.ofPattern("EEE, MMM d")
+    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
+    private val listDateFormatter = DateTimeFormatter.ofPattern("EEE d")
 
     /** 24:13, or 1:02:03 past an hour. */
     fun clock(totalSec: Long): String {
@@ -45,6 +48,32 @@ object WorkoutFormat {
     }
 
     fun dateTime(millis: Long): String = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).format(dateTimeFormatter)
+
+    fun monthHeader(millis: Long): String =
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).format(monthFormatter)
+
+    fun listDate(millis: Long): String =
+        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).format(listDateFormatter)
+
+    fun typeLabel(type: WorkoutType): String = when (type) {
+        WorkoutType.STRENGTH -> "Strength"
+        WorkoutType.RUN -> "Run"
+        WorkoutType.WALK -> "Walk"
+        WorkoutType.CYCLE -> "Cycle"
+    }
+
+    /** One-line subtitle on an S17 history row. */
+    fun listSubtitle(workout: Workout, units: UnitSystem): String = buildString {
+        append(listDate(workout.startedAt))
+        append(" · ")
+        append(clock(workout.durationSec))
+        if (workout.type == WorkoutType.STRENGTH) {
+            append(" · ")
+            append("${workout.totalSets} sets")
+            append(" · ")
+            append(volume(workout.totalVolumeKg, units))
+        }
+    }
 
     /** Plain-text summary for the Android share sheet. */
     fun shareText(workout: Workout, units: UnitSystem): String = buildString {

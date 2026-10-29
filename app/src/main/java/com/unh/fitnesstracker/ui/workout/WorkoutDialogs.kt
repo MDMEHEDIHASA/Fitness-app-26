@@ -84,6 +84,24 @@ fun FinishWorkoutDialog(
     )
 }
 
+/** S30 Delete confirmation. Undo is a snackbar on the calling screen, not this dialog. */
+@Composable
+fun DeleteWorkoutDialog(
+    workoutName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete workout?") },
+        text = { Text("\"$workoutName\" will be removed from your history. You can Undo for a few seconds.") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
 @Composable
 fun DiscardWorkoutDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(

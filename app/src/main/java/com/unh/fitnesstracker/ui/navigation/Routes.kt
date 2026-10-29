@@ -22,10 +22,13 @@ object Routes {
     const val STRENGTH_WORKOUT = "workout/strength"             // S9, S11, S12
     const val ADD_EXERCISE = "workout/strength/add"             // S10
     const val WORKOUT_SUMMARY = "workout/summary"               // S16
+    const val WORKOUT_DETAIL = "workout/detail/{workoutId}"     // S18
+    const val WORKOUT_ID_ARG = "workoutId"
     const val OUTDOOR_WORKOUT = "workout/outdoor/{type}"        // S13
     const val OUTDOOR_TYPE_ARG = "type"
 
     fun outdoorWorkout(type: OutdoorType) = "workout/outdoor/${type.name}"
+    fun workoutDetail(id: String) = "workout/detail/$id"
 }
 
 enum class OutdoorType(val label: String) { RUN("Outdoor run"), WALK("Outdoor walk"), CYCLE("Cycling") }

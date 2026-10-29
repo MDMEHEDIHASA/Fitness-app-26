@@ -64,6 +64,30 @@ data class Workout(
 ) {
     @get:Exclude
     val durationMinutes: Int get() = (durationSec / 60).toInt()
+
+    /** Recalculates set count and volume after the user edits sets on S18. */
+    fun withRecalculatedTotals(): Workout = copy(
+        totalSets = exercises.sumOf { it.sets.size },
+        totalVolumeKg = exercises.flatMap { it.sets }.sumOf { it.weightKg * it.reps },
+    )
+
+    /** Pre-fills S9 with this workout's exercises and last-set numbers. */
+    fun toRepeatTemplate(): WorkoutTemplate = WorkoutTemplate(
+        name = name,
+        createdAt = System.currentTimeMillis(),
+        exercises = exercises.map { entry ->
+            val last = entry.sets.lastOrNull() ?: SetEntry()
+            TemplateExercise(
+                exerciseId = entry.exerciseId,
+                name = entry.name,
+                muscleGroup = entry.muscleGroup,
+                trackedBy = entry.trackedBy,
+                sets = entry.sets.size.coerceAtLeast(1),
+                targetReps = if (entry.trackedBy == TrackedBy.TIME) last.durationSec else last.reps,
+                targetWeightKg = last.weightKg,
+            )
+        },
+    )
 }
 
 data class TemplateExercise(

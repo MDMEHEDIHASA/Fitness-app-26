@@ -109,6 +109,22 @@ class ActiveWorkoutSession(context: Context, private val scope: CoroutineScope) 
         startTicker()
     }
 
+    /** Repeat Workout (S18): same exercises and last-set numbers, new timer. */
+    fun startFromWorkout(
+        workout: Workout,
+        units: UnitSystem,
+        bodyWeightKg: Double?,
+        defaultRestSec: Int,
+    ) {
+        start(
+            name = workout.name,
+            units = units,
+            bodyWeightKg = bodyWeightKg,
+            defaultRestSec = defaultRestSec,
+            template = workout.toRepeatTemplate(),
+        )
+    }
+
     fun rename(name: String) = edit { it.copy(name = name) }
 
     fun pause() {

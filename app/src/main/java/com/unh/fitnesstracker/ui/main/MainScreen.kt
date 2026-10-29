@@ -47,8 +47,11 @@ import com.unh.fitnesstracker.ui.workout.AddExerciseScreen
 import com.unh.fitnesstracker.ui.workout.AddExerciseViewModel
 import com.unh.fitnesstracker.ui.workout.StartWorkoutSheet
 import com.unh.fitnesstracker.ui.workout.StartWorkoutViewModel
+import com.unh.fitnesstracker.ui.workout.WorkoutDetailScreen
+import com.unh.fitnesstracker.ui.workout.WorkoutDetailViewModel
 import com.unh.fitnesstracker.ui.workout.WorkoutSummaryScreen
 import com.unh.fitnesstracker.ui.workout.WorkoutsScreen
+import com.unh.fitnesstracker.ui.workout.WorkoutsViewModel
 import kotlinx.coroutines.launch
 
 /**
@@ -144,7 +147,15 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     )
                 }
                 composable(Routes.WORKOUTS) {
-                    WorkoutsScreen(onMenuClick = openDrawer, onStartWorkout = openStartSheet)
+                    val vm: WorkoutsViewModel = viewModel {
+                        WorkoutsViewModel(uid, container.userRepository, container.workoutRepository)
+                    }
+                    WorkoutsScreen(
+                        viewModel = vm,
+                        onMenuClick = openDrawer,
+                        onStartWorkout = openStartSheet,
+                        onOpenWorkout = { navController.navigate(Routes.workoutDetail(it)) },
+                    )
                 }
                 composable(Routes.PROGRESS) {
                     ComingSoonScreen(
@@ -207,6 +218,27 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                         AddExerciseViewModel(uid, container.exerciseRepository, container.workoutSession)
                     }
                     AddExerciseScreen(viewModel = vm, onBack = goBack)
+                }
+                composable(
+                    route = Routes.WORKOUT_DETAIL,
+                    arguments = listOf(navArgument(Routes.WORKOUT_ID_ARG) { type = NavType.StringType }),
+                ) { entry ->
+                    val workoutId = entry.arguments?.getString(Routes.WORKOUT_ID_ARG).orEmpty()
+                    val vm: WorkoutDetailViewModel = viewModel(key = workoutId) {
+                        WorkoutDetailViewModel(
+                            uid = uid,
+                            workoutId = workoutId,
+                            workoutRepository = container.workoutRepository,
+                            templateRepository = container.templateRepository,
+                            session = container.workoutSession,
+                            userRepository = container.userRepository,
+                        )
+                    }
+                    WorkoutDetailScreen(
+                        viewModel = vm,
+                        onBack = goBack,
+                        onRepeat = openStrengthWorkout,
+                    )
                 }
                 composable(Routes.WORKOUT_SUMMARY) {
                     WorkoutSummaryScreen(

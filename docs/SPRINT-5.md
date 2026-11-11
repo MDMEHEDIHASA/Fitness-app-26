@@ -4,8 +4,9 @@
 **Team:** MD Mehedi Hasan & Mohammed Mustafa Siddiq
 **Wireframe screens covered:** S19 Progress (Week), S20 Progress (Month / Year + metric menu)
 **GitHub issue:** [#5 Sprint 5: Progress charts & personal records](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/5)
-**Branch:** `sprint-5-6` (from `sprint-4`). Not pushed until you say so.
-**Status:** Built locally.
+**Branch:** `sprint-5-6` (from `sprint-4`)
+**Pull request:** [#15](https://github.com/MDMEHEDIHASA/Fitness-app-26/pull/15)
+**Status:** In review.
 
 ---
 

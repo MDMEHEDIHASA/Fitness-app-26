@@ -4,8 +4,9 @@
 **Team:** MD Mehedi Hasan & Mohammed Mustafa Siddiq
 **Wireframe screens covered:** S21 Goals list, S22 New / edit goal
 **GitHub issue:** [#6 Sprint 6: Goals](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/6)
-**Branch:** `sprint-5-6` (from `sprint-4`). Not pushed until you say so.
-**Status:** Built locally.
+**Branch:** `sprint-5-6` (from `sprint-4`)
+**Pull request:** [#15](https://github.com/MDMEHEDIHASA/Fitness-app-26/pull/15)
+**Status:** In review.
 
 ---
 

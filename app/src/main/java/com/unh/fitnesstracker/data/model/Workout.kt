@@ -56,6 +56,7 @@ data class Workout(
     val exercises: List<ExerciseEntry> = emptyList(),
     val totalSets: Int = 0,
     val totalVolumeKg: Double = 0.0,
+    val distanceM: Double = 0.0,
     val calories: Int = 0,
     val avgHr: Int? = null,
     val rating: Int? = null,

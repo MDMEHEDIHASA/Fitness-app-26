@@ -37,8 +37,8 @@ The app is built in sprints. Each sprint has a card on the [sprint board](https:
 | 2 | [App shell: Home, navigation, profile](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/2) | S5–S7, S28, S29 | 🔍 In review · [docs](docs/SPRINT-2.md) |
 | 3 | [Strength workout logging](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/3) | S9–S12, S16 | 🔍 In review · [docs](docs/SPRINT-3.md) |
 | 4 | [Workout history & detail](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/4) | S17, S18, S30, S31 | 🔍 In review · [docs](docs/SPRINT-4.md) |
-| 5 | [Progress charts & personal records](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/5) | S19, S20 | Backlog |
-| 6 | [Goals](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/6) | S21, S22 | Backlog |
+| 5 | [Progress charts & personal records](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/5) | S19, S20 | Built locally · [docs](docs/SPRINT-5.md) |
+| 6 | [Goals](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/6) | S21, S22 | Built locally · [docs](docs/SPRINT-6.md) |
 | 7 | [Reminders & notifications](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/7) | S8, S23, S24 | Backlog |
 | 8 | [Outdoor GPS tracking](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/8) | S13–S16 | Backlog |
 | 9 | [Health sensors](https://github.com/MDMEHEDIHASA/Fitness-app-26/issues/9) | S5, S9, S14, S19 | Backlog |
@@ -136,6 +136,8 @@ app/src/main/java/com/unh/fitnesstracker/
     ├── main/                  App shell: drawer (S6), bottom tabs, MainScreen
     ├── home/                  S5 Home dashboard
     ├── workout/               S7 sheet, S9–S12 active workout, S16 summary, S17 history, S18 detail
+    ├── progress/              S19 / S20 charts and personal records
+    ├── goals/                 S21 / S22 goals
     └── profile/               S28 Profile & Settings
 docs/
 ├── SPRINT-PLAN.md             Full roadmap and Firestore data model

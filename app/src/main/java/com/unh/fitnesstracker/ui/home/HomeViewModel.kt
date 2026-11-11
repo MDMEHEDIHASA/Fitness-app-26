@@ -3,7 +3,13 @@ package com.unh.fitnesstracker.ui.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.unh.fitnesstracker.data.model.GoalPeriod
+import com.unh.fitnesstracker.data.model.GoalStatus
+import com.unh.fitnesstracker.data.model.GoalType
 import com.unh.fitnesstracker.data.model.Workout
+import com.unh.fitnesstracker.data.progress.GoalCompletionTracker
+import com.unh.fitnesstracker.data.progress.GoalProgressCalculator
+import com.unh.fitnesstracker.data.repository.GoalRepository
 import com.unh.fitnesstracker.data.repository.UserRepository
 import com.unh.fitnesstracker.data.repository.WorkoutRepository
 import com.unh.fitnesstracker.data.session.ActiveWorkoutSession
@@ -52,7 +58,9 @@ class HomeViewModel(
     uid: String,
     userRepository: UserRepository,
     workoutRepository: WorkoutRepository,
+    goalRepository: GoalRepository,
     session: ActiveWorkoutSession,
+    completionTracker: GoalCompletionTracker,
 ) : ViewModel() {
 
     private val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMM d")
@@ -61,23 +69,43 @@ class HomeViewModel(
     private val todayStart = today.atStartOfDay(zone).toInstant().toEpochMilli()
     private val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         .atStartOfDay(zone).toInstant().toEpochMilli()
+    private val monthStart = today.withDayOfMonth(1).atStartOfDay(zone).toInstant().toEpochMilli()
 
-    private val thisWeek = workoutRepository.observeSince(uid, weekStart)
+    private val thisMonth = workoutRepository.observeSince(uid, monthStart)
         .onStart { emit(emptyList()) }
         .catch { e ->
             Log.w(TAG, "Workout listener failed", e)
             emit(emptyList())
         }
 
+    private val goals = goalRepository.observeGoals(uid)
+        .onStart { emit(emptyList()) }
+        .catch { e ->
+            Log.w(TAG, "Goals listener failed", e)
+            emit(emptyList())
+        }
+
     val uiState: StateFlow<HomeUiState> =
-        combine(userRepository.observeProfile(uid), thisWeek, session.state) { profile, workouts, active ->
+        combine(userRepository.observeProfile(uid), thisMonth, session.state, goals) { profile, workouts, active, allGoals ->
+            allGoals.filter { it.status == GoalStatus.ACTIVE }.forEach { goal ->
+                completionTracker.check(uid, goal, GoalProgressCalculator.progress(goal, workouts, profile?.weightKg))
+            }
+            val week = workouts.filter { it.startedAt >= weekStart }
             val todays = workouts.filter { it.startedAt >= todayStart }
+            val weeklyGoal = allGoals.firstOrNull {
+                it.status == GoalStatus.ACTIVE && it.type == GoalType.WORKOUTS && it.period == GoalPeriod.WEEKLY
+            }?.target?.toInt()
+            val stepGoal = allGoals.firstOrNull {
+                it.status == GoalStatus.ACTIVE && it.type == GoalType.STEPS && it.period == GoalPeriod.DAILY
+            }?.target?.toInt()
             HomeUiState(
                 firstName = profile?.firstName.orEmpty(),
                 dateText = today.format(dateFormatter),
+                stepGoal = stepGoal ?: HomeUiState.DEFAULT_STEP_GOAL,
                 activeMinutes = todays.sumOf(Workout::durationMinutes),
                 calories = todays.sumOf(Workout::calories),
-                workoutsThisWeek = workouts.size,
+                workoutsThisWeek = week.size,
+                weeklyWorkoutGoal = weeklyGoal,
                 workoutInProgress = active?.let { WorkoutInProgress(it.name, it.elapsedSec) },
             )
         }

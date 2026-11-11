@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import com.unh.fitnesstracker.data.model.Calories
+import com.unh.fitnesstracker.data.model.PersonalRecord
 import com.unh.fitnesstracker.data.model.Exercise
 import com.unh.fitnesstracker.data.model.ExerciseEntry
 import com.unh.fitnesstracker.data.model.SetEntry
@@ -78,6 +79,9 @@ class ActiveWorkoutSession(context: Context, private val scope: CoroutineScope) 
     /** The workout just saved from S12, shown by S16. */
     private val _lastSaved = MutableStateFlow<Workout?>(null)
     val lastSaved: StateFlow<Workout?> = _lastSaved.asStateFlow()
+
+    private val _lastNewRecords = MutableStateFlow<List<PersonalRecord>>(emptyList())
+    val lastNewRecords: StateFlow<List<PersonalRecord>> = _lastNewRecords.asStateFlow()
 
     private var nextKey = 0L
     private var accumulatedMs = 0L
@@ -251,8 +255,9 @@ class ActiveWorkoutSession(context: Context, private val scope: CoroutineScope) 
     }
 
     /** Ends the session after S12 saved it, and hands the result to S16. */
-    fun complete(saved: Workout) {
+    fun complete(saved: Workout, newRecords: List<PersonalRecord> = emptyList()) {
         _lastSaved.value = saved
+        _lastNewRecords.value = newRecords
         reset()
     }
 
@@ -260,6 +265,7 @@ class ActiveWorkoutSession(context: Context, private val scope: CoroutineScope) 
 
     fun clearLastSaved() {
         _lastSaved.value = null
+        _lastNewRecords.value = emptyList()
     }
 
     private fun reset() {

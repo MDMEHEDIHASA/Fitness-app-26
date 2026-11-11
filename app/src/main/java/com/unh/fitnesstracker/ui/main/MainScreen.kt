@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.automirrored.filled.ShowChart
-import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material3.DrawerValue
@@ -35,12 +33,17 @@ import androidx.navigation.navArgument
 import com.unh.fitnesstracker.AppContainer
 import com.unh.fitnesstracker.data.model.UnitSystem
 import com.unh.fitnesstracker.ui.components.LogOutDialog
+import com.unh.fitnesstracker.ui.goals.GoalsScreen
+import com.unh.fitnesstracker.ui.goals.GoalsViewModel
 import com.unh.fitnesstracker.ui.home.HomeScreen
 import com.unh.fitnesstracker.ui.home.HomeViewModel
 import com.unh.fitnesstracker.ui.navigation.OutdoorType
 import com.unh.fitnesstracker.ui.navigation.Routes
 import com.unh.fitnesstracker.ui.profile.ProfileScreen
 import com.unh.fitnesstracker.ui.profile.ProfileViewModel
+import com.unh.fitnesstracker.ui.progress.ProgressScreen
+import com.unh.fitnesstracker.ui.progress.ProgressViewModel
+import com.unh.fitnesstracker.ui.progress.RecordsScreen
 import com.unh.fitnesstracker.ui.workout.ActiveWorkoutScreen
 import com.unh.fitnesstracker.ui.workout.ActiveWorkoutViewModel
 import com.unh.fitnesstracker.ui.workout.AddExerciseScreen
@@ -67,7 +70,7 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
     }
 
     val profileViewModel: ProfileViewModel = viewModel {
-        ProfileViewModel(uid, container.userRepository, container.authRepository)
+        ProfileViewModel(uid, container.userRepository, container.authRepository, container.progressRepository, container.workoutRepository)
     }
     val profile by profileViewModel.profile.collectAsStateWithLifecycle()
     val startWorkoutViewModel: StartWorkoutViewModel = viewModel {
@@ -132,7 +135,14 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
             ) {
                 composable(Routes.HOME) {
                     val vm: HomeViewModel = viewModel {
-                        HomeViewModel(uid, container.userRepository, container.workoutRepository, container.workoutSession)
+                        HomeViewModel(
+                            uid,
+                            container.userRepository,
+                            container.workoutRepository,
+                            container.goalRepository,
+                            container.workoutSession,
+                            container.goalCompletionTracker,
+                        )
                     }
                     HomeScreen(
                         viewModel = vm,
@@ -158,13 +168,32 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     )
                 }
                 composable(Routes.PROGRESS) {
-                    ComingSoonScreen(
-                        title = "Progress",
-                        icon = Icons.AutoMirrored.Filled.ShowChart,
-                        sprint = 5,
-                        description = "Charts for steps, heart rate, workouts, distance, weight and volume, plus personal records.",
-                        nav = TopBarNav.Menu(openDrawer),
+                    val vm: ProgressViewModel = viewModel {
+                        ProgressViewModel(
+                            uid,
+                            container.userRepository,
+                            container.workoutRepository,
+                            container.progressRepository,
+                            container.goalRepository,
+                        )
+                    }
+                    ProgressScreen(
+                        viewModel = vm,
+                        onMenuClick = openDrawer,
+                        onOpenRecords = { navController.navigate(Routes.RECORDS) },
                     )
+                }
+                composable(Routes.RECORDS) {
+                    val vm: ProgressViewModel = viewModel {
+                        ProgressViewModel(
+                            uid,
+                            container.userRepository,
+                            container.workoutRepository,
+                            container.progressRepository,
+                            container.goalRepository,
+                        )
+                    }
+                    RecordsScreen(viewModel = vm, onBack = goBack)
                 }
                 composable(Routes.PROFILE) {
                     ProfileScreen(
@@ -175,11 +204,17 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                     )
                 }
                 composable(Routes.GOALS) {
-                    ComingSoonScreen(
-                        title = "Goals", icon = Icons.Filled.Flag, sprint = 6,
-                        description = "Set step, workout, distance, heart-rate and weight goals that update on their own.",
-                        nav = TopBarNav.Back(goBack),
-                    )
+                    val vm: GoalsViewModel = viewModel {
+                        GoalsViewModel(
+                            uid,
+                            container.userRepository,
+                            container.workoutRepository,
+                            container.progressRepository,
+                            container.goalRepository,
+                            container.goalCompletionTracker,
+                        )
+                    }
+                    GoalsScreen(viewModel = vm, onBack = goBack)
                 }
                 composable(Routes.REMINDERS) {
                     ComingSoonScreen(
@@ -200,7 +235,13 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
                 }
                 composable(Routes.STRENGTH_WORKOUT) {
                     val vm: ActiveWorkoutViewModel = viewModel {
-                        ActiveWorkoutViewModel(uid, container.workoutSession, container.workoutRepository, container.templateRepository)
+                        ActiveWorkoutViewModel(
+                            uid,
+                            container.workoutSession,
+                            container.workoutRepository,
+                            container.templateRepository,
+                            container.progressRepository,
+                        )
                     }
                     ActiveWorkoutScreen(
                         viewModel = vm,

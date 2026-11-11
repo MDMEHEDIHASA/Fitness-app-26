@@ -59,6 +59,7 @@ fun ProfileScreen(
     onLogOutClick: () -> Unit,
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
+    val stats by viewModel.stats.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -117,16 +118,15 @@ fun ProfileScreen(
                 Text(p.email, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
-            // Stats (filled in by workout history in Sprints 3–5)
             Card(
                 Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
             ) {
                 Row(Modifier.padding(vertical = 16.dp)) {
-                    StatColumn("0", "Workouts", Modifier.weight(1f))
-                    StatColumn("0 days", "Streak", Modifier.weight(1f))
-                    StatColumn(if (system == UnitSystem.METRIC) "0 km" else "0 mi", "Total", Modifier.weight(1f))
+                    StatColumn(stats.workouts.toString(), "Workouts", Modifier.weight(1f))
+                    StatColumn("${stats.streakDays} ${if (stats.streakDays == 1) "day" else "days"}", "Streak", Modifier.weight(1f))
+                    StatColumn(Units.formatDistance(stats.distanceM, system), "Total", Modifier.weight(1f))
                 }
             }
 

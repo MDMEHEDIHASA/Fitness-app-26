@@ -83,6 +83,9 @@ fastlane/readme.md
 # Version control
 vcs.xml
 
+# Presentation
+docs/video
+
 # lint
 lint/intermediates/
 lint/generated/

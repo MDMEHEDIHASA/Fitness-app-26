@@ -11,7 +11,8 @@ object Routes {
     // Main graph (MainScreen). The first four are the bottom tabs.
     const val HOME = "home"               // S5
     const val WORKOUTS = "workouts"       // S17, S31
-    const val PROGRESS = "progress"       // S19
+    const val PROGRESS = "progress"       // S19, S20
+    const val RECORDS = "progress/records"
     const val PROFILE = "profile"         // S28
 
     const val GOALS = "goals"             // S21

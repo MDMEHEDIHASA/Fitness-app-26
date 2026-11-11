@@ -5,12 +5,16 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.unh.fitnesstracker.data.progress.GoalCompletionTracker
 import com.unh.fitnesstracker.data.repository.AuthRepository
 import com.unh.fitnesstracker.data.repository.ExerciseRepository
+import com.unh.fitnesstracker.data.repository.GoalRepository
+import com.unh.fitnesstracker.data.repository.ProgressRepository
 import com.unh.fitnesstracker.data.repository.TemplateRepository
 import com.unh.fitnesstracker.data.repository.UserRepository
 import com.unh.fitnesstracker.data.repository.WorkoutRepository
 import com.unh.fitnesstracker.data.session.ActiveWorkoutSession
+import com.unh.fitnesstracker.ui.notify.GoalNotifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -40,6 +44,11 @@ class AppContainer(context: Context) {
     val workoutRepository by lazy { WorkoutRepository(firestore) }
     val exerciseRepository by lazy { ExerciseRepository(firestore) }
     val templateRepository by lazy { TemplateRepository(firestore) }
+    val progressRepository by lazy { ProgressRepository(firestore) }
+    val goalRepository by lazy { GoalRepository(firestore) }
+
+    val goalNotifier by lazy { GoalNotifier(context.applicationContext) }
+    val goalCompletionTracker by lazy { GoalCompletionTracker(goalRepository, goalNotifier) }
 
     /** The strength workout in progress, shared by S9–S12 and Home. */
     val workoutSession = ActiveWorkoutSession(context.applicationContext, CoroutineScope(SupervisorJob() + Dispatchers.Default))

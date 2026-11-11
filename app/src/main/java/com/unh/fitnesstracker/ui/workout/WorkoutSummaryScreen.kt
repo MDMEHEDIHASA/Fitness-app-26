@@ -55,6 +55,7 @@ fun WorkoutSummaryScreen(
     onDone: () -> Unit,
 ) {
     val workout by session.lastSaved.collectAsStateWithLifecycle()
+    val newRecords by session.lastNewRecords.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showDiscard by rememberSaveable { mutableStateOf(false) }
     var leaving by remember { mutableStateOf(false) }
@@ -98,6 +99,18 @@ fun WorkoutSummaryScreen(
                 Text(WorkoutFormat.dateTime(saved.startedAt), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             item { SummaryStats(saved, units) }
+            if (newRecords.isNotEmpty()) {
+                item {
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("★ New record!", style = MaterialTheme.typography.titleMedium)
+                            newRecords.forEach { record ->
+                                Text("${record.type.label}${if (record.exerciseName.isNotEmpty()) " · ${record.exerciseName}" else ""}")
+                            }
+                        }
+                    }
+                }
+            }
             if (saved.rating != null || saved.notes.isNotEmpty()) {
                 item {
                     Card(Modifier.fillMaxWidth()) {

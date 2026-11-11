@@ -14,11 +14,22 @@ enum class UnitSystem(val id: String, val label: String) {
 object Units {
     private const val CM_PER_INCH = 2.54
     private const val LB_PER_KG = 2.20462
+    private const val M_PER_MILE = 1609.34
 
     fun cmToInches(cm: Double) = cm / CM_PER_INCH
     fun inchesToCm(inches: Double) = inches * CM_PER_INCH
     fun kgToLb(kg: Double) = kg * LB_PER_KG
     fun lbToKg(lb: Double) = lb / LB_PER_KG
+    fun metersToKm(m: Double) = m / 1000.0
+    fun kmToMeters(km: Double) = km * 1000.0
+    fun metersToMiles(m: Double) = m / M_PER_MILE
+    fun milesToMeters(mi: Double) = mi * M_PER_MILE
+
+    fun formatDistance(meters: Double, system: UnitSystem): String {
+        val value = if (system == UnitSystem.IMPERIAL) metersToMiles(meters) else metersToKm(meters)
+        val unit = if (system == UnitSystem.IMPERIAL) "mi" else "km"
+        return if (value < 10) "%.2f %s".format(value, unit) else "%.1f %s".format(value, unit)
+    }
 
     fun formatHeight(cm: Double?, system: UnitSystem): String? = cm?.let {
         when (system) {

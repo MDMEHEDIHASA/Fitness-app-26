@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -44,6 +45,7 @@ import com.unh.fitnesstracker.data.model.UnitSystem
 import com.unh.fitnesstracker.data.model.Units
 import com.unh.fitnesstracker.ui.components.BarChart
 import com.unh.fitnesstracker.ui.components.LineChart
+import com.unh.fitnesstracker.ui.components.FetchError
 import com.unh.fitnesstracker.ui.main.MainScreenScaffold
 import com.unh.fitnesstracker.ui.main.TopBarNav
 
@@ -57,6 +59,20 @@ fun ProgressScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     MainScreenScaffold(title = "Progress", nav = TopBarNav.Menu(onMenuClick)) { padding ->
+        if (state.loading) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) { CircularProgressIndicator() }
+            return@MainScreenScaffold
+        }
+        if (state.error != null) {
+            FetchError(state.error!!, modifier = Modifier.padding(padding))
+            return@MainScreenScaffold
+        }
         if (state.empty) {
             Column(
                 Modifier

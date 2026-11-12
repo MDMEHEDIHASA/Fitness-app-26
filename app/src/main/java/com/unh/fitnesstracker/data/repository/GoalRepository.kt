@@ -16,7 +16,7 @@ class GoalRepository(private val db: FirebaseFirestore) {
         goals(uid)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .observe { snapshot ->
-                snapshot.documents.mapNotNull { it.toObject(Goal::class.java)?.copy(id = it.id) }
+                snapshot.documents.mapNotNull { it.toData(Goal::class.java)?.copy(id = it.id) }
             }
 
     fun save(uid: String, goal: Goal): Goal {

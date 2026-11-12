@@ -3,9 +3,7 @@ package com.unh.fitnesstracker.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.unh.fitnesstracker.data.model.UserProfile
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class UserRepository(private val db: FirebaseFirestore) {
@@ -17,19 +15,26 @@ class UserRepository(private val db: FirebaseFirestore) {
     }
 
     suspend fun getProfile(uid: String): UserProfile? =
-        userDoc(uid).get().await().toObject(UserProfile::class.java)
+        userDoc(uid).get().await().toData(UserProfile::class.java)
+
+    /**
+     * Creates `users/{uid}` if it is missing so Profile / Home are not stuck on a spinner
+     * after email log-in or a failed sign-up write.
+     */
+    suspend fun ensureProfile(uid: String, fullName: String, email: String) {
+        if (getProfile(uid) != null) return
+        userDoc(uid).set(
+            UserProfile(uid = uid, fullName = fullName, email = email, onboardingComplete = true),
+            SetOptions.merge(),
+        ).await()
+    }
 
     /** Emits the profile now and again every time it changes in Firestore (on any device). */
-    fun observeProfile(uid: String): Flow<UserProfile?> = callbackFlow {
-        val registration = userDoc(uid).addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
-            trySend(snapshot?.toObject(UserProfile::class.java))
+    fun observeProfile(uid: String): Flow<UserProfile?> =
+        userDoc(uid).observe { snapshot ->
+            if (!snapshot.exists()) null
+            else snapshot.toData(UserProfile::class.java)
         }
-        awaitClose { registration.remove() }
-    }
 
     suspend fun setOnboardingComplete(uid: String) {
         userDoc(uid).set(mapOf("onboardingComplete" to true), SetOptions.merge()).await()

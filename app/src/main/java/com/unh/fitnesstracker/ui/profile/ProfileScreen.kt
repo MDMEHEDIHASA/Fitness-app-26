@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unh.fitnesstracker.data.model.UnitSystem
 import com.unh.fitnesstracker.data.model.Units
+import com.unh.fitnesstracker.ui.components.FetchError
 import com.unh.fitnesstracker.ui.components.InitialsAvatar
 import com.unh.fitnesstracker.ui.main.MainScreenScaffold
 import com.unh.fitnesstracker.ui.main.TopBarNav
@@ -61,6 +62,7 @@ fun ProfileScreen(
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val loadError by viewModel.loadError.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     var openDialog by rememberSaveable { mutableStateOf<ProfileDialog?>(null) }
@@ -81,6 +83,11 @@ fun ProfileScreen(
         snackbarHostState = snackbarHostState,
     ) { padding ->
         val p = profile
+        val error = loadError
+        if (p == null && error != null) {
+            FetchError(error, onRetry = viewModel::retry, modifier = Modifier.padding(padding))
+            return@MainScreenScaffold
+        }
         if (p == null) {
             Column(
                 modifier = Modifier

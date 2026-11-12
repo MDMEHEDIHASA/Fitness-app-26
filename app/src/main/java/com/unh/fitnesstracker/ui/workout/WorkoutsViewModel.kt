@@ -9,6 +9,8 @@ import com.unh.fitnesstracker.data.model.Workout
 import com.unh.fitnesstracker.data.model.WorkoutType
 import com.unh.fitnesstracker.data.repository.UserRepository
 import com.unh.fitnesstracker.data.repository.WorkoutRepository
+import com.unh.fitnesstracker.data.repository.isFirestoreBlocked
+import com.unh.fitnesstracker.data.repository.toFirestoreMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,8 +36,10 @@ data class HistoryUiState(
     val query: String = "",
     val units: UnitSystem = UnitSystem.METRIC,
     val canLoadMore: Boolean = false,
-    val emptyHistory: Boolean = true,
+    val emptyHistory: Boolean = false,
     val noMatches: Boolean = false,
+    val loading: Boolean = true,
+    val error: String? = null,
 )
 
 /** S17 Workout history: live paged list, type chips and in-memory search. */
@@ -57,6 +61,7 @@ class WorkoutsViewModel(
         workoutRepository.observeHistory(uid, type, currentLimit)
             .catch { e ->
                 Log.w(TAG, "History listener failed", e)
+                if (e.isFirestoreBlocked()) throw e
                 emit(emptyList())
             }
     }
@@ -66,7 +71,7 @@ class WorkoutsViewModel(
         filter,
         query,
         limit,
-        userRepository.observeProfile(uid),
+        userRepository.observeProfile(uid).catch { emit(null) },
     ) { workouts, currentFilter, currentQuery, currentLimit, profile ->
         val matches = workouts.filter { it.matches(currentQuery) }
         HistoryUiState(
@@ -78,9 +83,13 @@ class WorkoutsViewModel(
             emptyHistory = workouts.isEmpty() && currentQuery.isBlank() && currentFilter == HistoryFilter.ALL,
             noMatches = workouts.isNotEmpty() && matches.isEmpty() ||
                 (workouts.isEmpty() && (currentQuery.isNotBlank() || currentFilter != HistoryFilter.ALL)),
+            loading = false,
         )
     }
-        .catch { emit(HistoryUiState()) }
+        .catch { e ->
+            Log.w(TAG, "History combine failed", e)
+            emit(HistoryUiState(loading = false, error = e.toFirestoreMessage()))
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HistoryUiState())
 
     fun setFilter(value: HistoryFilter) {

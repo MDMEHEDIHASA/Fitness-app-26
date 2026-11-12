@@ -20,7 +20,7 @@ class ExerciseRepository(private val db: FirebaseFirestore) {
         customExercises(uid)
             .observe { snapshot ->
                 snapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Exercise::class.java)?.copy(id = doc.id, custom = true)
+                    doc.toData(Exercise::class.java)?.copy(id = doc.id, custom = true)
                 }
             }
             .onStart { emit(emptyList()) }

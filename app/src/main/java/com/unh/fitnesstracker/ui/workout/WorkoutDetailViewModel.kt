@@ -55,7 +55,10 @@ class WorkoutDetailViewModel(
             Log.w(TAG, "Detail listener failed", e)
             emit(null)
         },
-        userRepository.observeProfile(uid),
+        userRepository.observeProfile(uid).catch { e ->
+            Log.w(TAG, "Profile listener failed", e)
+            emit(null)
+        },
     ) { workout, currentProfile ->
         profile = currentProfile
         WorkoutDetailUiState(

@@ -14,7 +14,7 @@ class TemplateRepository(private val db: FirebaseFirestore) {
         templates(uid)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .observe { snapshot ->
-                snapshot.documents.mapNotNull { it.toObject(WorkoutTemplate::class.java)?.copy(id = it.id) }
+                snapshot.documents.mapNotNull { it.toData(WorkoutTemplate::class.java)?.copy(id = it.id) }
             }
 
     fun save(uid: String, template: WorkoutTemplate) {

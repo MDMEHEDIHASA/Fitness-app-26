@@ -18,7 +18,7 @@ class ProgressRepository(private val db: FirebaseFirestore) {
         records(uid)
             .orderBy("achievedAt", Query.Direction.DESCENDING)
             .observe { snapshot ->
-                snapshot.documents.mapNotNull { it.toObject(PersonalRecord::class.java)?.copy(id = it.id) }
+                snapshot.documents.mapNotNull { it.toData(PersonalRecord::class.java)?.copy(id = it.id) }
             }
 
     fun saveRecord(uid: String, record: PersonalRecord) {
@@ -29,7 +29,7 @@ class ProgressRepository(private val db: FirebaseFirestore) {
         weights(uid)
             .orderBy("recordedAt", Query.Direction.DESCENDING)
             .observe { snapshot ->
-                snapshot.documents.mapNotNull { it.toObject(BodyWeightEntry::class.java)?.copy(id = it.id) }
+                snapshot.documents.mapNotNull { it.toData(BodyWeightEntry::class.java)?.copy(id = it.id) }
             }
 
     fun saveBodyWeight(uid: String, weightKg: Double, recordedAt: Long = System.currentTimeMillis()) {

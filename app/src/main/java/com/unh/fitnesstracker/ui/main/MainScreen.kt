@@ -69,6 +69,17 @@ fun MainScreen(container: AppContainer, onLoggedOut: () -> Unit) {
         return
     }
 
+    LaunchedEffect(uid) {
+        val user = container.authRepository.currentUser ?: return@LaunchedEffect
+        runCatching {
+            container.userRepository.ensureProfile(
+                uid = uid,
+                fullName = user.displayName.orEmpty(),
+                email = user.email.orEmpty(),
+            )
+        }
+    }
+
     val profileViewModel: ProfileViewModel = viewModel {
         ProfileViewModel(uid, container.userRepository, container.authRepository, container.progressRepository, container.workoutRepository)
     }

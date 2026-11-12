@@ -86,7 +86,15 @@ class HomeViewModel(
         }
 
     val uiState: StateFlow<HomeUiState> =
-        combine(userRepository.observeProfile(uid), thisMonth, session.state, goals) { profile, workouts, active, allGoals ->
+        combine(
+            userRepository.observeProfile(uid).catch { e ->
+                Log.w(TAG, "Profile listener failed", e)
+                emit(null)
+            },
+            thisMonth,
+            session.state,
+            goals,
+        ) { profile, workouts, active, allGoals ->
             allGoals.filter { it.status == GoalStatus.ACTIVE }.forEach { goal ->
                 completionTracker.check(uid, goal, GoalProgressCalculator.progress(goal, workouts, profile?.weightKg))
             }

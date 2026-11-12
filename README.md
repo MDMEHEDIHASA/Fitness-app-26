@@ -97,7 +97,7 @@ Open the folder in Android Studio (**File → Open**) and let Gradle sync.
 1. In the [Firebase console](https://console.firebase.google.com), open the project (or create one) and **Add app → Android** with package name **`com.unh.fitnesstracker`**.
 2. Download `google-services.json` into the **`app/`** folder. The file name must be exactly `google-services.json`; browsers sometimes add a space or `(1)`.
 3. **Authentication → Sign-in method:** enable **Email/Password** and **Google**.
-4. **Firestore Database → Create database** (test mode is fine for development).
+4. **Firestore Database → Create database**, then **Rules** → paste [`firestore.rules`](firestore.rules) → **Publish**. Test mode expires after 30 days and then Workouts, Progress, and Profile cannot load.
 5. For Google sign-in, add your debug **SHA-1** under **Project settings → your Android app → Add fingerprint**:
    ```bash
    keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android

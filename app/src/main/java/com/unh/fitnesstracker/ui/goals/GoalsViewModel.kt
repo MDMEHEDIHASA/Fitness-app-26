@@ -60,7 +60,7 @@ class GoalsViewModel(
         goalRepository.observeGoals(uid).catch { e -> Log.w(TAG, "Goals failed", e); emit(emptyList()) },
         workoutRepository.observeSince(uid, monthStart).catch { e -> Log.w(TAG, "Workouts failed", e); emit(emptyList()) },
         progressRepository.observeBodyWeight(uid).catch { e -> Log.w(TAG, "Weights failed", e); emit(emptyList()) },
-        userRepository.observeProfile(uid),
+        userRepository.observeProfile(uid).catch { e -> Log.w(TAG, "Profile failed", e); emit(null) },
     ) { goals, workouts, weights, profile ->
         val latestWeight = weights.firstOrNull()?.weightKg ?: profile?.weightKg
         val items = goals.map { goal ->

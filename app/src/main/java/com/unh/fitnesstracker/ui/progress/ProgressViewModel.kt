@@ -18,6 +18,8 @@ import com.unh.fitnesstracker.data.repository.ProgressRepository
 import com.unh.fitnesstracker.data.repository.UserRepository
 import com.unh.fitnesstracker.data.repository.WorkoutRepository
 import com.unh.fitnesstracker.ui.components.ChartPoint
+import com.unh.fitnesstracker.data.repository.isFirestoreBlocked
+import com.unh.fitnesstracker.data.repository.toFirestoreMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +46,9 @@ data class ProgressUiState(
     val restingHr: Int? = null,
     val records: List<PersonalRecord> = emptyList(),
     val goalLine: Double? = null,
-    val empty: Boolean = true,
+    val empty: Boolean = false,
+    val loading: Boolean = true,
+    val error: String? = null,
 ) {
     val selected: ChartPoint? get() = selectedIndex?.let { points.getOrNull(it) }
 }
@@ -65,16 +69,22 @@ class ProgressViewModel(
     private val yearAgo = today.minusYears(1).atStartOfDay(zone).toInstant().toEpochMilli()
 
     private val workouts = workoutRepository.observeSince(uid, yearAgo)
-        .catch { e -> Log.w(TAG, "Workouts failed", e); emit(emptyList()) }
+        .catch { e ->
+            Log.w(TAG, "Workouts failed", e)
+            if (e.isFirestoreBlocked()) throw e
+            emit(emptyList())
+        }
     private val weights = progressRepository.observeBodyWeight(uid)
         .catch { e -> Log.w(TAG, "Weights failed", e); emit(emptyList()) }
     private val records = progressRepository.observeRecords(uid)
         .catch { e -> Log.w(TAG, "Records failed", e); emit(emptyList()) }
     private val goals = goalRepository.observeGoals(uid)
         .catch { e -> Log.w(TAG, "Goals failed", e); emit(emptyList()) }
+    private val profileUnits = userRepository.observeProfile(uid)
+        .catch { e -> Log.w(TAG, "Profile failed", e); emit(null) }
 
     val uiState: StateFlow<ProgressUiState> = combine(
-        combine(range, metric, selected, userRepository.observeProfile(uid)) { r, m, s, p -> Quad(r, m, s, p?.unitSystem ?: UnitSystem.METRIC) },
+        combine(range, metric, selected, profileUnits) { r, m, s, p -> Quad(r, m, s, p?.unitSystem ?: UnitSystem.METRIC) },
         combine(workouts, weights, records, goals) { w, b, rec, g -> Quad(w, b, rec, g) },
     ) { rangeMetric, data ->
         val (currentRange, currentMetric, selectedIndex, units) = rangeMetric
@@ -97,9 +107,13 @@ class ProgressViewModel(
             records = allRecords,
             goalLine = goalLine,
             empty = allWorkouts.isEmpty() && allWeights.isEmpty(),
+            loading = false,
         )
     }
-        .catch { emit(ProgressUiState()) }
+        .catch { e ->
+            Log.w(TAG, "Progress combine failed", e)
+            emit(ProgressUiState(loading = false, error = e.toFirestoreMessage()))
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProgressUiState())
 
     fun setRange(value: ProgressRange) {

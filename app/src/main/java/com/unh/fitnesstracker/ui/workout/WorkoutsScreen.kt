@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unh.fitnesstracker.data.model.UnitSystem
 import com.unh.fitnesstracker.data.model.Workout
+import com.unh.fitnesstracker.ui.components.FetchError
 import com.unh.fitnesstracker.ui.main.MainScreenScaffold
 import com.unh.fitnesstracker.ui.main.TopBarNav
 import kotlinx.coroutines.delay
@@ -107,7 +109,15 @@ fun WorkoutsScreen(
             }
         },
     ) { padding ->
-        if (state.emptyHistory) {
+        if (state.loading) {
+            Column(
+                Modifier.fillMaxSize().padding(padding),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) { CircularProgressIndicator() }
+        } else if (state.error != null) {
+            FetchError(state.error!!, modifier = Modifier.padding(padding))
+        } else if (state.emptyHistory) {
             EmptyHistory(Modifier.padding(padding), onStartWorkout)
         } else {
             LazyColumn(
